@@ -11,11 +11,15 @@
   },
   "dependencies": {
     "axios": "^1.7.7",
+    "lottie-react-native": "^6.7.2",
     "react": "18.3.1",
     "react-native": "0.75.2",
     "react-native-gesture-handler": "^2.19.0",
+    "react-native-insta-story": "^1.1.9",
     "react-native-reanimated": "^3.15.1",
-    "react-native-reanimated-carousel": "^3.5.1"
+    "react-native-reanimated-carousel": "^3.5.1",
+    "react-native-vector-icons": "^10.1.0",
+    "react-native-video": "^6.5.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
