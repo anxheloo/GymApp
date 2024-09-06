@@ -9,7 +9,7 @@ export const clock = require('../assets/clock.png');
 export const stories = [
   {
     id: '1',
-    stories: [
+    items: [
       {
         type: 'image',
         image: require('../assets/asia.png'),
@@ -46,7 +46,7 @@ export const stories = [
   },
   {
     id: '2',
-    stories: [
+    items: [
       {
         type: 'image',
         image: require('../assets/asia.png'),
@@ -55,7 +55,7 @@ export const stories = [
   },
   {
     id: '3',
-    stories: [
+    items: [
       {
         type: 'image',
         image: require('../assets/asia.png'),
@@ -64,7 +64,7 @@ export const stories = [
   },
   {
     id: '4',
-    stories: [
+    items: [
       {
         type: 'image',
         image: require('../assets/asia.png'),
@@ -73,7 +73,7 @@ export const stories = [
   },
   {
     id: '5',
-    stories: [
+    items: [
       {
         type: 'image',
         image: require('../assets/asia.png'),
@@ -81,3 +81,22 @@ export const stories = [
     ],
   },
 ];
+
+export type FlatlistItem = {
+  id: number;
+  stories: Stories[];
+};
+
+export type Stories = {
+  type: string;
+  image?: string;
+  video?: string;
+  lottie?: string;
+};
+
+export type StoryComponentProps = {
+  onFinishStory?: () => void;
+  stories: Stories[];
+  scrollTo: () => void;
+  isVisible: boolean;
+};

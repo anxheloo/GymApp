@@ -1,7 +1,15 @@
-import React from 'react';
-import {FlatList, StyleSheet, View, Dimensions} from 'react-native';
+import React, {useCallback, useRef, useState} from 'react';
+import {
+  FlatList,
+  StyleSheet,
+  View,
+  Dimensions,
+  // ActivityIndicator,
+  // Text,
+} from 'react-native';
 import StoryComponent from './StoryComponent';
 import {stories} from '../helper/exportedFunction';
+// import UseFetch from '../utils/useFetch';
 
 const windowHeight = Dimensions.get('window').height;
 
@@ -11,7 +19,7 @@ const Feed: React.FC = () => {
   // if (isLoading) {
   //   return (
   //     <>
-  //       <ActivityIndicator size="large" style={styles.loading} />
+  //       <ActivityIndicator size="large" />
   //     </>
   //   );
   // }
@@ -19,14 +27,31 @@ const Feed: React.FC = () => {
   // if (error) {
   //   return (
   //     <>
-  //       <Text style={styles.item}>Error fetching data: {error.message}</Text>
+  //       <Text>Error fetching data: {error.message}</Text>
   //     </>
   //   );
   // }
 
+  const [visibleItemIndex, setVisibleItemIndex] = useState<number | null>(0);
+
+  const flatListRef = useRef<FlatList<any> | null>(null);
+
+  const scrollTo = (index: number) => {
+    if (index < stories.length - 1) {
+      flatListRef?.current?.scrollToIndex({index: index + 1});
+    }
+  };
+
+  const onViewableItemsChanged = useCallback(({viewableItems}: any) => {
+    if (viewableItems.length > 0) {
+      setVisibleItemIndex(viewableItems[0].index ?? null);
+    }
+  }, []);
+
   return (
     <View style={styles.container}>
       <FlatList
+        ref={flatListRef}
         // refreshing={isLoading}
         // onRefresh={refetch}
         decelerationRate="fast"
@@ -37,14 +62,16 @@ const Feed: React.FC = () => {
         overScrollMode="never"
         // data={datas}
         data={stories}
-        contentContainerStyle={styles.flatlistContainer}
         keyExtractor={({id}) => id}
-        renderItem={({item}) => (
-          // <Workout details={item} ref={resetWorkoutRef} />
-          <StoryComponent stories={item.stories} />
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={{itemVisiblePercentThreshold: 50}}
+        renderItem={({item, index}) => (
+          <StoryComponent
+            stories={item.items}
+            scrollTo={() => scrollTo(index)}
+            isVisible={index === visibleItemIndex}
+          />
         )}
-        // onViewableItemsChanged={onViewableItemsChanged}
-        // onScroll={onViewableItemsChanged}
       />
     </View>
   );
@@ -54,8 +81,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-
-  flatlistContainer: {},
 });
 
 export default Feed;

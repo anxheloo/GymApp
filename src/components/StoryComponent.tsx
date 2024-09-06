@@ -2,52 +2,31 @@ import React, {useEffect, useRef, useState} from 'react';
 import {
   Animated,
   Dimensions,
-  GestureResponderEvent,
   Image,
   Pressable,
-  SafeAreaView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
-import {
-  cross,
-  logo,
-  clock,
-  mute,
-  pause,
-  play,
-  unmute,
-} from '../helper/exportedFunction';
+import {logo, clock, StoryComponentProps} from '../helper/exportedFunction';
 import Video from 'react-native-video';
 import LottieView from 'lottie-react-native';
-
-type Stories = {
-  type: string;
-  image?: string;
-  video?: string;
-  lottie?: string;
-};
-
-type StoryComponentProps = {
-  onFinishStory?: () => void;
-  stories: Stories[];
-};
+import Carousel from 'react-native-reanimated-carousel';
 
 const {width, height} = Dimensions.get('window');
 
 const StoryComponent: React.FC<StoryComponentProps> = ({
-  onFinishStory,
   stories,
+  scrollTo,
+  isVisible,
 }) => {
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const progressAnimation = useRef(new Animated.Value(0)).current;
   const pausedProgress = useRef(0);
   const [isPaused, setIsPaused] = useState(false);
-  const currentStory = stories[currentStoryIndex];
   const [isMuted, setIsMuted] = useState(false);
-  const [wentBack, setWentBack] = useState(0);
+
+  const carouselRef = useRef<any>(null);
 
   const renderStoryContent = (story: any) => {
     switch (story.type) {
@@ -70,7 +49,7 @@ const StoryComponent: React.FC<StoryComponentProps> = ({
             style={styles.backgroundImage}
             speed={isPaused ? 0 : 1}
             autoPlay
-            loop
+            // loop
           />
         );
       default:
@@ -80,33 +59,32 @@ const StoryComponent: React.FC<StoryComponentProps> = ({
 
   const goToNextStory = () => {
     if (currentStoryIndex < stories.length - 1) {
-      Animated.timing(progressAnimation, {
-        toValue: 1,
-        duration: 3,
-        useNativeDriver: false,
-      }).start(() => {
-        pausedProgress.current = 0;
-        setCurrentStoryIndex(prev => prev + 1);
-        progressAnimation.setValue(0);
-      });
+      carouselRef.current?.next();
     } else {
-      setWentBack(0);
-      // onFinishStory();
-      setCurrentStoryIndex(0);
+      scrollTo();
     }
   };
 
-  const runProgressAnimation = () => {
-    progressAnimation.setValue(pausedProgress.current);
-    Animated.timing(progressAnimation, {
-      toValue: 1,
-      duration: (1 - pausedProgress.current) * 6000,
-      useNativeDriver: false,
-    }).start(({finished}) => {
-      if (finished) {
-        goToNextStory();
-      }
-    });
+  const goToPreviousStory = () => {
+    if (currentStoryIndex > 0) {
+      carouselRef.current?.prev();
+    }
+  };
+
+  const handlePress = event => {
+    const touchX = event.nativeEvent.locationX;
+
+    if (touchX < width / 2) {
+      console.log(
+        'This is touchX:',
+        touchX,
+        'this is touchX < width / 2',
+        touchX < width / 2,
+      );
+      goToPreviousStory();
+    } else {
+      goToNextStory();
+    }
   };
 
   const getProgressBarWidth = (storyIndex: number, currentIndex: number) => {
@@ -124,54 +102,17 @@ const StoryComponent: React.FC<StoryComponentProps> = ({
     return '0%';
   };
 
-  const goToPreviousStory = () => {
-    if (isPaused) {
-      setIsPaused(true);
-    }
-
-    pausedProgress.current = 0;
-    progressAnimation.setValue(0);
-
-    if (currentStoryIndex === 0) {
-      setWentBack(prev => prev + 1);
-      runProgressAnimation();
-    } else {
-      setCurrentStoryIndex(prev => prev - 1);
-    }
-  };
-
-  const handlePressIn = () => {
-    setIsPaused(true);
-  };
-
-  const handlePressOut = () => {
-    setIsPaused(false);
-  };
-
-  const handleTouchScreen = (event: GestureResponderEvent) => {
-    const touchX = event.nativeEvent.locationX;
-
-    if (touchX < width / 2) {
-      goToPreviousStory();
-    } else {
-      goToNextStory();
-    }
-  };
-
-  const pausePlay = () => {
-    if (isPaused) {
-      setIsPaused(false);
-    } else {
-      setIsPaused(true);
-    }
-  };
-
-  const muteAndUnMute = () => {
-    if (isMuted) {
-      setIsMuted(false);
-    } else {
-      setIsMuted(true);
-    }
+  const runProgressAnimation = () => {
+    progressAnimation.setValue(pausedProgress.current);
+    Animated.timing(progressAnimation, {
+      toValue: 1,
+      duration: (1 - pausedProgress.current) * 3000,
+      useNativeDriver: false,
+    }).start(({finished}) => {
+      if (finished) {
+        goToNextStory();
+      }
+    });
   };
 
   useEffect(() => {
@@ -182,79 +123,106 @@ const StoryComponent: React.FC<StoryComponentProps> = ({
         pausedProgress.current = value;
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentStoryIndex, isPaused]);
+  }, [isPaused]);
+
+  useEffect(() => {
+    if (isVisible) {
+      setCurrentStoryIndex(0);
+      carouselRef.current?.scrollTo({index: currentStoryIndex});
+      progressAnimation.setValue(0);
+      pausedProgress.current = 0;
+      setIsPaused(false);
+      runProgressAnimation();
+    } else {
+      progressAnimation.stopAnimation();
+      progressAnimation.setValue(0);
+      pausedProgress.current = 0;
+      setCurrentStoryIndex(0);
+    }
+  }, [isVisible]);
 
   return (
-    <Pressable
-      onPress={handleTouchScreen}
-      onLongPress={handlePressIn}
-      onPressOut={handlePressOut}
-      style={({pressed}) => [
-        {opacity: pressed ? 0.9 : 1},
-        // styles.pressableContainer,
-        styles.container,
-      ]}>
-      <View style={styles.viewContainer}>
-        {currentStory.type && renderStoryContent(currentStory)}
-        {/* <SafeAreaView> */}
-        <View style={styles.progressBarContainer}>
-          {stories.map((story, index) => (
-            <View style={styles.progressBarBackground} key={index}>
-              <Animated.View
-                style={[
-                  styles.progressBar,
-                  {width: getProgressBarWidth(index, currentStoryIndex)},
-                ]}
-              />
+    <Carousel
+      ref={carouselRef}
+      panGestureHandlerProps={{
+        activeOffsetX: [-10, 10],
+      }}
+      loop={false}
+      width={width}
+      height={height - 25}
+      data={stories}
+      scrollAnimationDuration={500}
+      onSnapToItem={idx => {
+        setCurrentStoryIndex(idx);
+        progressAnimation.setValue(0);
+        pausedProgress.current = 0;
+        setIsPaused(false);
+        runProgressAnimation();
+      }}
+      renderItem={({item}) => {
+        return (
+          <Pressable
+            onPress={handlePress}
+            onPressIn={() => setIsPaused(true)}
+            onPressOut={() => setIsPaused(false)}
+            style={({pressed}) => [
+              {opacity: pressed ? 0.9 : 1},
+              styles.container,
+            ]}>
+            <View style={styles.viewContainer}>
+              {item.type && renderStoryContent(item)}
+
+              <View style={styles.progressBarContainer}>
+                {stories.map((story, i) => {
+                  return (
+                    <View style={styles.progressBarBackground} key={i}>
+                      <Animated.View
+                        style={[
+                          styles.progressBar,
+                          {width: getProgressBarWidth(i, currentStoryIndex)},
+                        ]}
+                      />
+                    </View>
+                  );
+                })}
+              </View>
+
+              <View style={styles.topBar}>
+                <Image source={logo} style={styles.logo} />
+                <View style={styles.titlesContainer}>
+                  <Text style={styles.workoutTitle}>
+                    FAT LOSS WORKOUT FOR WOMEN LOREM IPSUM DOLOR SIT AMET
+                  </Text>
+                  <Text style={styles.workoutSmallTitle}>
+                    Stiff legged deadlift
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.bottomBar}>
+                <Image
+                  source={clock}
+                  style={{
+                    width: 25,
+                    height: 25,
+                    backgroundColor: 'white',
+                    borderRadius: 50,
+                  }}
+                />
+                <Text
+                  style={{color: 'white', fontWeight: 'bold', fontSize: 18}}>
+                  00:45
+                </Text>
+                <Text
+                  style={{color: 'white', fontWeight: 'bold', fontSize: 18}}>
+                  Advanced
+                </Text>
+              </View>
             </View>
-          ))}
-        </View>
-
-        <View style={styles.topBar}>
-          <Image source={logo} style={styles.logo} />
-          <View style={styles.titlesContainer}>
-            <Text style={styles.workoutTitle}>
-              FAT LOSS WORKOUT FOR WOMEN LOREM IPSUM DOLOR SIT AMET
-            </Text>
-            <Text style={styles.workoutSmallTitle}>Stiff legged deadlift</Text>
-          </View>
-        </View>
-
-        <View style={styles.bottomBar}>
-          <Image
-            source={clock}
-            style={{
-              width: 25,
-              height: 25,
-              backgroundColor: 'white',
-              borderRadius: 50,
-            }}
-          />
-          <Text style={{color: 'white', fontWeight: 'bold', fontSize: 18}}>
-            00:45
-          </Text>
-          <Text style={{color: 'white', fontWeight: 'bold', fontSize: 18}}>
-            Advanced
-          </Text>
-        </View>
-
-        {/* <View style={styles.buttonContainer}>
-          <TouchableOpacity onPress={muteAndUnMute}>
-            <Image source={isMuted ? mute : unmute} style={styles.icon} />
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={pausePlay}>
-            <Image source={isPaused ? play : pause} style={styles.icon} />
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={onFinishStory}>
-            <Image source={cross} style={styles.icon} />
-          </TouchableOpacity>
-        </View> */}
-        {/* </SafeAreaView> */}
-      </View>
-    </Pressable>
+          </Pressable>
+        );
+      }}
+    />
   );
 };
 
