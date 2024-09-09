@@ -10,38 +10,44 @@ export const stories = [
   {
     id: '1',
     items: [
-      {
-        type: 'image',
-        image: require('../assets/asia.png'),
-      },
-      {
-        type: 'image',
-        image: require('../assets/coding.png'),
-      },
-      {
-        type: 'image',
-        image: require('../assets/deer.png'),
-      },
+      // {
+      //   type: 'image',
+      //   image: require('../assets/asia.png'),
+      // },
+      // {
+      //   type: 'image',
+      //   image: require('../assets/coding.png'),
+      // },
+      // {
+      //   type: 'image',
+      //   image: require('../assets/deer.png'),
+      // },
       {
         type: 'image',
         image: require('../assets/mountain.png'),
       },
       {
         type: 'video',
-        video: require('../assets/fast.mp4'),
+        // video: require('../assets/fast.mp4'),
+        video:
+          'https://app.onemor.com/api/playlists/01j6hq2fq64m1qzdq2yytz8kat.m3u8',
       },
       {
         type: 'video',
-        video: require('../assets/stock.mp4'),
+        // video: require('../assets/stock.mp4'),
+        video:
+          'https://app.onemor.com/api/playlists/01j6ht7x9fw77z6tarbj753dn0.m3u8',
       },
       {
         type: 'video',
-        video: require('../assets/sea.mp4'),
+        // video: require('../assets/sea.mp4'),
+        video:
+          'https://app.onemor.com/api/playlists/01j6htc175vbeg4gk9ewkaagwq.m3u8',
       },
-      {
-        type: 'lottie',
-        lottie: require('../assets/loading.json'),
-      },
+      // {
+      //   type: 'lottie',
+      //   lottie: require('../assets/loading.json'),
+      // },
     ],
   },
   {
@@ -97,6 +103,7 @@ export type Stories = {
 export type StoryComponentProps = {
   onFinishStory?: () => void;
   stories: Stories[];
-  scrollTo: () => void;
+  scrollTo: (workoutIdx: number) => void;
   isVisible: boolean;
+  workoutIndex?: number;
 };
