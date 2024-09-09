@@ -2,6 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {
   Animated,
   Dimensions,
+  GestureResponderEvent,
   Image,
   Pressable,
   StyleSheet,
@@ -21,10 +22,10 @@ const StoryComponent: React.FC<StoryComponentProps> = ({
   isVisible,
 }) => {
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
-  const progressAnimation = useRef(new Animated.Value(0)).current;
-  const pausedProgress = useRef(0);
-  const [isPaused, setIsPaused] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
+  // const progressAnimation = useRef(new Animated.Value(0)).current;
+  // const pausedProgress = useRef(0);
+  // const [isPaused, setIsPaused] = useState(false);
+  // const [isMuted, setIsMuted] = useState(false);
 
   const carouselRef = useRef<any>(null);
 
@@ -38,8 +39,8 @@ const StoryComponent: React.FC<StoryComponentProps> = ({
             source={story.video}
             resizeMode="cover"
             style={styles.backgroundImage}
-            paused={isPaused}
-            muted={isMuted}
+            // paused={isPaused}
+            // muted={isMuted}
           />
         );
       case 'lottie':
@@ -47,7 +48,7 @@ const StoryComponent: React.FC<StoryComponentProps> = ({
           <LottieView
             source={story.lottie}
             style={styles.backgroundImage}
-            speed={isPaused ? 0 : 1}
+            // speed={isPaused ? 0 : 1}
             autoPlay
             // loop
           />
@@ -71,7 +72,7 @@ const StoryComponent: React.FC<StoryComponentProps> = ({
     }
   };
 
-  const handlePress = event => {
+  const handlePress = (event: GestureResponderEvent): void => {
     const touchX = event.nativeEvent.locationX;
 
     if (touchX < width / 2) {
@@ -87,56 +88,56 @@ const StoryComponent: React.FC<StoryComponentProps> = ({
     }
   };
 
-  const getProgressBarWidth = (storyIndex: number, currentIndex: number) => {
-    if (currentIndex > storyIndex) {
-      return '100%';
-    }
+  // const getProgressBarWidth = (storyIndex: number, currentIndex: number) => {
+  //   if (currentIndex > storyIndex) {
+  //     return '100%';
+  //   }
 
-    if (currentIndex === storyIndex) {
-      return progressAnimation.interpolate({
-        inputRange: [0, 1],
-        outputRange: ['0%', '100%'],
-      });
-    }
+  //   if (currentIndex === storyIndex) {
+  //     return progressAnimation.interpolate({
+  //       inputRange: [0, 1],
+  //       outputRange: ['0%', '100%'],
+  //     });
+  //   }
 
-    return '0%';
-  };
+  //   return '0%';
+  // };
 
-  const runProgressAnimation = () => {
-    progressAnimation.setValue(pausedProgress.current);
-    Animated.timing(progressAnimation, {
-      toValue: 1,
-      duration: (1 - pausedProgress.current) * 3000,
-      useNativeDriver: false,
-    }).start(({finished}) => {
-      if (finished) {
-        goToNextStory();
-      }
-    });
-  };
+  // const runProgressAnimation = () => {
+  //   progressAnimation.setValue(pausedProgress.current);
+  //   Animated.timing(progressAnimation, {
+  //     toValue: 1,
+  //     duration: (1 - pausedProgress.current) * 3000,
+  //     useNativeDriver: false,
+  //   }).start(({finished}) => {
+  //     if (finished) {
+  //       goToNextStory();
+  //     }
+  //   });
+  // };
 
-  useEffect(() => {
-    if (!isPaused) {
-      runProgressAnimation();
-    } else {
-      progressAnimation.stopAnimation(value => {
-        pausedProgress.current = value;
-      });
-    }
-  }, [isPaused]);
+  // useEffect(() => {
+  //   if (!isPaused) {
+  //     runProgressAnimation();
+  //   } else {
+  //     progressAnimation.stopAnimation(value => {
+  //       pausedProgress.current = value;
+  //     });
+  //   }
+  // }, [isPaused]);
 
   useEffect(() => {
     if (isVisible) {
       setCurrentStoryIndex(0);
-      carouselRef.current?.scrollTo({index: currentStoryIndex});
-      progressAnimation.setValue(0);
-      pausedProgress.current = 0;
-      setIsPaused(false);
-      runProgressAnimation();
+      carouselRef.current?.scrollTo({index: 0});
+      // progressAnimation.setValue(0);
+      // pausedProgress.current = 0;
+      // setIsPaused(false);
+      // runProgressAnimation();
     } else {
-      progressAnimation.stopAnimation();
-      progressAnimation.setValue(0);
-      pausedProgress.current = 0;
+      // progressAnimation.stopAnimation();
+      // progressAnimation.setValue(0);
+      // pausedProgress.current = 0;
       setCurrentStoryIndex(0);
     }
   }, [isVisible]);
@@ -154,38 +155,23 @@ const StoryComponent: React.FC<StoryComponentProps> = ({
       scrollAnimationDuration={500}
       onSnapToItem={idx => {
         setCurrentStoryIndex(idx);
-        progressAnimation.setValue(0);
-        pausedProgress.current = 0;
-        setIsPaused(false);
-        runProgressAnimation();
+        // progressAnimation.setValue(0);
+        // pausedProgress.current = 0;
+        // setIsPaused(false);
+        // runProgressAnimation();
       }}
       renderItem={({item}) => {
         return (
           <Pressable
-            onPress={handlePress}
-            onPressIn={() => setIsPaused(true)}
-            onPressOut={() => setIsPaused(false)}
+            onPress={event => handlePress(event)}
+            // onPressIn={() => setIsPaused(true)}
+            // onPressOut={() => setIsPaused(false)}
             style={({pressed}) => [
               {opacity: pressed ? 0.9 : 1},
               styles.container,
             ]}>
             <View style={styles.viewContainer}>
               {item.type && renderStoryContent(item)}
-
-              <View style={styles.progressBarContainer}>
-                {stories.map((story, i) => {
-                  return (
-                    <View style={styles.progressBarBackground} key={i}>
-                      <Animated.View
-                        style={[
-                          styles.progressBar,
-                          {width: getProgressBarWidth(i, currentStoryIndex)},
-                        ]}
-                      />
-                    </View>
-                  );
-                })}
-              </View>
 
               <View style={styles.topBar}>
                 <Image source={logo} style={styles.logo} />

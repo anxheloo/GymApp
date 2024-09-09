@@ -44,7 +44,7 @@ const Feed: React.FC = () => {
 
   const onViewableItemsChanged = useCallback(({viewableItems}: any) => {
     if (viewableItems.length > 0) {
-      setVisibleItemIndex(viewableItems[0].index ?? null);
+      setVisibleItemIndex(viewableItems[0].index);
     }
   }, []);
 
