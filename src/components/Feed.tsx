@@ -6,21 +6,23 @@ import {
   Dimensions,
   ActivityIndicator,
   Text,
-  // ActivityIndicator,
-  // Text,
 } from 'react-native';
 import StoryComponent from './StoryComponent';
-import {stories} from '../helper/exportedFunction';
 import UseFetch from '../utils/useFetch';
-// import UseFetch from '../utils/useFetch';
 
 const windowHeight = Dimensions.get('window').height;
 
 const Feed: React.FC = () => {
   const [visibleItemIndex, setVisibleItemIndex] = useState<number | null>(0);
   const flatListRef = useRef<FlatList<any> | null>(null);
-
   const {datas, isLoading, error, refetch} = UseFetch();
+
+  const scrollTo = (workoutIdx: number) => {
+    console.log('This is workout index:', workoutIdx);
+    if (workoutIdx < datas?.length - 1) {
+      flatListRef?.current?.scrollToIndex({index: workoutIdx + 1});
+    }
+  };
 
   const onViewableItemsChanged = useCallback(({viewableItems}: any) => {
     if (viewableItems.length > 0) {
@@ -44,36 +46,29 @@ const Feed: React.FC = () => {
     );
   }
 
-  const scrollTo = (workoutIdx: number) => {
-    console.log('This is workout index:', workoutIdx);
-    if (workoutIdx < stories.length - 1) {
-      flatListRef?.current?.scrollToIndex({index: workoutIdx + 1});
-    }
-  };
-
   return (
     <View style={styles.container}>
       <FlatList
         ref={flatListRef}
-        // refreshing={isLoading}
-        // onRefresh={refetch}
+        refreshing={isLoading}
+        onRefresh={refetch}
         decelerationRate="fast"
         snapToInterval={windowHeight}
         snapToAlignment="start"
         showsVerticalScrollIndicator={false}
         bounces={false}
         overScrollMode="never"
-        // data={datas}
-        data={stories}
+        data={datas}
         keyExtractor={({id}) => id}
         removeClippedSubviews={true}
         initialNumToRender={5}
         maxToRenderPerBatch={5}
         onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={{itemVisiblePercentThreshold: 50}}
+        viewabilityConfig={{itemVisiblePercentThreshold: 100}}
+        onEndReached={() => console.log('Ready to fetch next items ')}
         renderItem={({item, index}) => (
           <StoryComponent
-            stories={item.items}
+            stories={item}
             scrollTo={scrollTo}
             isVisible={index === visibleItemIndex}
             workoutIndex={index}

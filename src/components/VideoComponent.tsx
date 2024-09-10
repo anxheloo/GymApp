@@ -1,48 +1,57 @@
-import React, {useState} from 'react';
-import {ActivityIndicator, StyleSheet, View} from 'react-native';
+import React, {memo, useState} from 'react';
+import {ActivityIndicator, StyleSheet, Text, View} from 'react-native';
 import Video from 'react-native-video';
 
 type VideoComponentProps = {
   uri: string;
+  isVisible: boolean;
 };
 
-const VideoComponent: React.FC<VideoComponentProps> = ({uri}) => {
-  const [isLoading, setVideoIsLoading] = useState(true);
-  const [isBuffering, setIsBuffering] = useState(false);
+const VideoComponent: React.FC<VideoComponentProps> = ({uri, isVisible}) => {
+  const [isLoading, setVideoIsLoading] = useState(false);
+  const [err, setErr] = useState(null);
 
-  console.log('This is video is loading:', isLoading);
-  console.log('This is video is isBuffering:', isBuffering);
+  if (err) {
+    return <Text>Something Went Wrong</Text>;
+  }
 
   return (
     <View style={styles.backgroundImage}>
-      {/* {isLoading || isBuffering ? (
+      {!isVisible && !isLoading ? (
         <ActivityIndicator size="small" color="#fff" style={styles.loading} />
-      ) : ( */}
-      <Video
-        source={{uri: uri}} // Use the .m3u8 URL here
-        style={styles.backgroundImage}
-        controls={false} // Show video controls
-        resizeMode="cover" // Resize mode
-        onBuffer={({isBuffering}) => {
-          setIsBuffering(isBuffering);
-          console.log('Buffering:', isBuffering);
-        }} // Buffering status
-        onError={error => {
-          console.error('Video error:', error);
-          setVideoIsLoading(false); // Stop loader on error
-        }} // Error handling
-        onLoadStart={() => {
-          setVideoIsLoading(true);
-          console.log('Video loading started');
-        }}
-        onLoad={() => {
-          setVideoIsLoading(false);
-          console.log('Video loaded');
-        }} // Loaded callback
-        onEnd={() => console.log('Video ended')} // End callback
-        paused={false} // Autoplay video
-      />
-      {/* //   )} */}
+      ) : (
+        <Video
+          source={{uri: uri}}
+          style={styles.backgroundImage}
+          controls={false}
+          resizeMode="cover"
+          onBuffer={({isBuffering}) => {
+            console.log('Buffering:', isBuffering);
+          }}
+          onError={error => {
+            setVideoIsLoading(false);
+            setErr(error);
+          }}
+          onLoadStart={() => {
+            setVideoIsLoading(true);
+          }}
+          onLoad={() => {
+            setVideoIsLoading(false);
+            console.log('Video loaded');
+          }}
+          onEnd={() => console.log('Video ended')} // End callback
+          // playInBackground={false} // Video will not continue to play when app enters the background.
+          // playWhenInactive={false}
+          //   paused={!isVisible}
+          paused={false}
+          // bufferConfig={{
+          //   minBufferMs: 5000,
+          //   maxBufferMs: 30000,
+          //   bufferForPlaybackMs: 1000,
+          //   bufferForPlaybackAfterRebufferMs: 2000,
+          // }}
+        />
+      )}
     </View>
   );
 };
@@ -65,9 +74,7 @@ const styles = StyleSheet.create({
 
   loading: {
     flex: 1,
-    // position: 'absolute',
-    // zIndex: 999999999999999,
   },
 });
 
-export default VideoComponent;
+export default memo(VideoComponent);

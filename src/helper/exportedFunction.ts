@@ -6,87 +6,89 @@ export const mute = require('../assets/muted.png');
 export const unmute = require('../assets/sound.png');
 export const clock = require('../assets/clock.png');
 
-export const stories = [
-  {
-    id: '1',
-    items: [
-      // {
-      //   type: 'image',
-      //   image: require('../assets/asia.png'),
-      // },
-      // {
-      //   type: 'image',
-      //   image: require('../assets/coding.png'),
-      // },
-      // {
-      //   type: 'image',
-      //   image: require('../assets/deer.png'),
-      // },
-      {
-        type: 'image',
-        image: require('../assets/mountain.png'),
-      },
-      {
-        type: 'video',
-        // video: require('../assets/fast.mp4'),
-        video:
-          'https://app.onemor.com/api/playlists/01j6hq2fq64m1qzdq2yytz8kat.m3u8',
-      },
-      {
-        type: 'video',
-        // video: require('../assets/stock.mp4'),
-        video:
-          'https://app.onemor.com/api/playlists/01j6ht7x9fw77z6tarbj753dn0.m3u8',
-      },
-      {
-        type: 'video',
-        // video: require('../assets/sea.mp4'),
-        video:
-          'https://app.onemor.com/api/playlists/01j6htc175vbeg4gk9ewkaagwq.m3u8',
-      },
-      // {
-      //   type: 'lottie',
-      //   lottie: require('../assets/loading.json'),
-      // },
-    ],
-  },
-  {
-    id: '2',
-    items: [
-      {
-        type: 'image',
-        image: require('../assets/asia.png'),
-      },
-    ],
-  },
-  {
-    id: '3',
-    items: [
-      {
-        type: 'image',
-        image: require('../assets/asia.png'),
-      },
-    ],
-  },
-  {
-    id: '4',
-    items: [
-      {
-        type: 'image',
-        image: require('../assets/asia.png'),
-      },
-    ],
-  },
-  {
-    id: '5',
-    items: [
-      {
-        type: 'image',
-        image: require('../assets/asia.png'),
-      },
-    ],
-  },
-];
+// export const stories = [
+//   {
+//     id: '1',
+//     items: [
+//       // {
+//       //   type: 'image',
+//       //   image: require('../assets/asia.png'),
+//       // },
+//       // {
+//       //   type: 'image',
+//       //   image: require('../assets/coding.png'),
+//       // },
+//       // {
+//       //   type: 'image',
+//       //   image: require('../assets/deer.png'),
+//       // },
+//       {
+//         type: 'video',
+//         // image: require('../assets/mountain.png'),
+//         video:
+//           'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+//       },
+//       {
+//         type: 'video',
+//         // video: require('../assets/fast.mp4'),
+//         video:
+//           'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+//       },
+//       {
+//         type: 'video',
+//         // video: require('../assets/stock.mp4'),
+//         video:
+//           'https://app.onemor.com/api/playlists/01j6ht7x9fw77z6tarbj753dn0.m3u8',
+//       },
+//       {
+//         type: 'video',
+//         // video: require('../assets/sea.mp4'),
+//         video:
+//           'https://app.onemor.com/api/playlists/01j6htc175vbeg4gk9ewkaagwq.m3u8',
+//       },
+//       // {
+//       //   type: 'lottie',
+//       //   lottie: require('../assets/loading.json'),
+//       // },
+//     ],
+//   },
+//   {
+//     id: '2',
+//     items: [
+//       {
+//         type: 'image',
+//         image: require('../assets/asia.png'),
+//       },
+//     ],
+//   },
+//   {
+//     id: '3',
+//     items: [
+//       {
+//         type: 'image',
+//         image: require('../assets/asia.png'),
+//       },
+//     ],
+//   },
+//   {
+//     id: '4',
+//     items: [
+//       {
+//         type: 'image',
+//         image: require('../assets/asia.png'),
+//       },
+//     ],
+//   },
+//   {
+//     id: '5',
+//     items: [
+//       {
+//         type: 'image',
+//         image: require('../assets/asia.png'),
+//       },
+//     ],
+//   },
+// ];
 
 export type FlatlistItem = {
   id: number;

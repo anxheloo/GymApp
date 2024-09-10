@@ -6,8 +6,6 @@ import {Colors} from 'react-native/Libraries/NewAppScreen';
 import Feed from './src/components/Feed';
 
 function App() {
-  // const isDarkMode = useColorScheme() === 'dark';
-
   const backgroundStyle = {
     // backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
     backgroundColor: Colors.darker,

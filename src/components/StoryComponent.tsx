@@ -1,20 +1,18 @@
-import React, {Suspense, useEffect, useRef, useState} from 'react';
+import React, {memo, useEffect, useRef, useState} from 'react';
 import {
   ActivityIndicator,
   Animated,
   Dimensions,
   GestureResponderEvent,
-  Image,
   Pressable,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
-import {logo, clock, StoryComponentProps} from '../helper/exportedFunction';
-import Video from 'react-native-video';
-import LottieView from 'lottie-react-native';
 import Carousel from 'react-native-reanimated-carousel';
+import {StoryComponentProps} from '../helper/exportedFunction';
 import VideoComponent from './VideoComponent';
+import TopBar from './TopBar';
+import BottomBar from './BottomBar';
 
 const {width, height} = Dimensions.get('window');
 
@@ -28,22 +26,10 @@ const StoryComponent: React.FC<StoryComponentProps> = ({
   const progressAnimation = useRef(new Animated.Value(0)).current;
   const carouselRef = useRef<any>(null);
 
-  const renderStoryContent = (story: any) => {
-    switch (story.type) {
-      case 'image':
-        return <Image source={story.image} style={styles.backgroundImage} />;
-      case 'video':
-        return <VideoComponent uri={story.video} />;
-      default:
-        return null;
-    }
-  };
-
   const goToNextStory = () => {
-    if (currentStoryIndex < stories.length - 1) {
-      progressAnimation.stopAnimation();
-      progressAnimation.setValue(0);
-      setCurrentStoryIndex(currentStoryIndex + 1);
+    progressAnimation.setValue(0);
+    if (currentStoryIndex < stories.routines.length - 1) {
+      setCurrentStoryIndex(prev => prev + 1);
       carouselRef.current?.next();
     } else {
       scrollTo(workoutIndex);
@@ -51,10 +37,9 @@ const StoryComponent: React.FC<StoryComponentProps> = ({
   };
 
   const goToPreviousStory = () => {
-    progressAnimation.stopAnimation();
     progressAnimation.setValue(0);
     if (currentStoryIndex > 0) {
-      setCurrentStoryIndex(currentStoryIndex - 1);
+      setCurrentStoryIndex(prev => prev - 1);
       carouselRef.current?.prev();
     }
   };
@@ -69,18 +54,16 @@ const StoryComponent: React.FC<StoryComponentProps> = ({
     }
   };
 
-  const getProgressBarWidth = (index: number, currentIndex: number) => {
-    if (currentIndex > index) {
+  const getProgressBarWidth = (index: number) => {
+    if (currentStoryIndex > index) {
       return '100%';
     }
-
-    if (currentIndex === index) {
+    if (currentStoryIndex === index) {
       return progressAnimation.interpolate({
         inputRange: [0, 1],
         outputRange: ['0%', '100%'],
       });
     }
-
     return '0%';
   };
 
@@ -104,80 +87,83 @@ const StoryComponent: React.FC<StoryComponentProps> = ({
 
       runProgressAnimation();
     } else {
-      setCurrentStoryIndex(0);
-      progressAnimation.stopAnimation();
       progressAnimation.setValue(0);
     }
   }, [isVisible]);
 
   return (
     <View style={styles.mainContainer}>
-      <View style={styles.progressBarContainer}>
-        {stories.map((story, index) => (
-          <View style={styles.progressBarBackground} key={index}>
-            <Animated.View
-              style={[
-                styles.progressBar,
-                {
-                  width: getProgressBarWidth(index, currentStoryIndex),
-                },
-              ]}
-            />
-          </View>
-        ))}
-      </View>
+      {isVisible && (
+        <View style={styles.progressBarContainer}>
+          {stories?.routines?.map((story, index: number) => (
+            <View style={styles.progressBarBackground} key={index}>
+              <Animated.View
+                style={[
+                  styles.progressBar,
+                  {
+                    width: getProgressBarWidth(index),
+                  },
+                ]}
+              />
+            </View>
+          ))}
+        </View>
+      )}
 
-      <Carousel
-        ref={carouselRef}
-        panGestureHandlerProps={{
-          activeOffsetX: [-10, 10],
-        }}
-        loop={false}
-        width={width}
-        height={height - 26}
-        data={stories}
-        scrollAnimationDuration={500}
-        onSnapToItem={idx => {
-          setCurrentStoryIndex(idx);
-          runProgressAnimation();
-        }}
-        renderItem={({item}) => {
-          return (
-            <Pressable
-              onPress={event => handlePress(event)}
-              style={({pressed}) => [
-                {opacity: pressed ? 0.9 : 1},
-                styles.container,
-              ]}>
-              <View style={styles.viewContainer}>
-                {item.type && (
+      {!isVisible ? (
+        <ActivityIndicator
+          size="small"
+          color="#fff"
+          style={[styles.viewContainer]}
+        />
+      ) : (
+        <Carousel
+          ref={carouselRef}
+          panGestureHandlerProps={{
+            activeOffsetX: [-10, 10],
+          }}
+          loop={false}
+          width={width}
+          height={height - 26}
+          data={stories.routines}
+          scrollAnimationDuration={500}
+          onSnapToItem={idx => {
+            progressAnimation.setValue(0);
+            setCurrentStoryIndex(idx);
+            runProgressAnimation();
+          }}
+          renderItem={({item, index}) => {
+            return (
+              <Pressable
+                onPress={event => handlePress(event)}
+                style={({pressed}) => [
+                  {opacity: pressed ? 0.9 : 1},
+                  styles.container,
+                ]}>
+                <View style={styles.viewContainer}>
                   <View pointerEvents="none" style={styles.backgroundImage}>
-                    {renderStoryContent(item)}
+                    <VideoComponent
+                      uri={item.video?.playlist_url}
+                      isVisible={index === currentStoryIndex}
+                    />
                   </View>
-                )}
 
-                <View style={styles.topBar}>
-                  <Image source={logo} style={styles.logo} />
-                  <View style={styles.titlesContainer}>
-                    <Text style={styles.workoutTitle}>
-                      FAT LOSS WORKOUT FOR WOMEN LOREM IPSUM DOLOR SIT AMET
-                    </Text>
-                    <Text style={styles.workoutSmallTitle}>
-                      Stiff legged deadlift
-                    </Text>
-                  </View>
-                </View>
+                  <TopBar
+                    workoutTitle={stories?.name}
+                    storyTitle={item?.name}
+                    profileUri={stories?.user?.profile_photo_url}
+                  />
 
-                <View style={styles.bottomBar}>
-                  <Image source={clock} style={styles.bottomBarIcon} />
-                  <Text style={styles.bottomBarText}>00:45</Text>
-                  <Text style={styles.bottomBarText}>Advanced</Text>
+                  <BottomBar
+                    difficulty={stories?.difficulty}
+                    duration={stories?.total_duration}
+                  />
                 </View>
-              </View>
-            </Pressable>
-          );
-        }}
-      />
+              </Pressable>
+            );
+          }}
+        />
+      )}
     </View>
   );
 };
@@ -214,14 +200,13 @@ const styles = StyleSheet.create({
   progressBarContainer: {
     flexDirection: 'row',
     paddingHorizontal: 10,
-    // paddingTop: 10,
     justifyContent: 'center',
     height: 3,
     position: 'absolute',
     left: 13,
     right: 13,
     marginHorizontal: 'auto',
-    top: 20,
+    top: 25,
     zIndex: 9999999,
   },
 
@@ -237,65 +222,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
 
-  topBar: {
-    paddingHorizontal: 12,
-    position: 'absolute',
-    width: '100%',
-    top: 20,
-    flexDirection: 'row',
-    gap: 10,
-  },
-
-  titlesContainer: {
-    justifyContent: 'space-between',
-  },
-
-  workoutTitle: {
-    width: width - 96,
-    color: 'white',
-    fontSize: 15,
-    textTransform: 'uppercase',
-    flexShrink: 1,
-  },
-
-  workoutSmallTitle: {
-    color: 'gray',
-    fontSize: 12,
-  },
-
-  bottomBar: {
-    paddingHorizontal: 12,
-    position: 'absolute',
-    width: '100%',
-    bottom: 35,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 15,
-  },
-
-  bottomBarIcon: {
-    width: 25,
-    height: 25,
-    backgroundColor: 'white',
-    borderRadius: 50,
-  },
-
-  bottomBarText: {color: 'white', fontWeight: 'bold', fontSize: 18},
-
-  logo: {
-    width: 60,
-    height: 60,
-    borderRadius: 6,
-    backgroundColor: 'red',
-    resizeMode: 'contain',
-  },
-
-  icon: {
-    width: 25,
-    height: 25,
-    marginLeft: 10,
-  },
-
   buttonContainer: {
     position: 'absolute',
     right: 10,
@@ -305,4 +231,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default StoryComponent;
+export default memo(StoryComponent);
